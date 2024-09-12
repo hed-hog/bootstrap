@@ -4,8 +4,7 @@ import {
   Table,
   TableForeignKey,
 } from 'typeorm';
-import { timestampColumn } from '../utils/timestampColumn';
-import { idColumn } from '../utils/idColumn';
+import { idColumn, timestampColumn } from '@hedhog/utils';
 
 export class Migrate1720396740915 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -32,35 +31,7 @@ export class Migrate1720396740915 implements MigrationInterface {
         ('Não Listado');
       `,
     );
-
-    await queryRunner.createTable(
-      new Table({
-        name: 'files',
-        columns: [
-          idColumn(),
-          {
-            name: 'name',
-            type: 'varchar',
-          },
-          {
-            name: 'url',
-            type: 'varchar',
-          },
-          {
-            name: 'extension',
-            type: 'varchar',
-            length: '15',
-          },
-          {
-            name: 'bytes',
-            type: 'int',
-          },
-          timestampColumn(),
-          timestampColumn('updated_at'),
-        ],
-      }),
-    );
-
+    /*
     await queryRunner.createTable(
       new Table({
         name: 'persons',
@@ -104,11 +75,11 @@ export class Migrate1720396740915 implements MigrationInterface {
         onDelete: 'Cascade',
       }),
     ]);
+    */
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropTable('persons');
-    await queryRunner.dropTable('files');
     await queryRunner.dropTable('visibilities');
   }
 }
