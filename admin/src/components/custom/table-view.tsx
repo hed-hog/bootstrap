@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useImperativeHandle, useState } from 'react'
 import {
   Table,
   TableHeader,
@@ -35,6 +35,8 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { formatDate, isValidDateString } from '@/lib/date-string'
+import { v4 as uuidv4 } from 'uuid'
 
 interface ITableViewProps<T> {
   columns: ITableColumn<T>[]
@@ -63,38 +65,43 @@ interface ITableViewProps<T> {
   onSelect?: (row: T, index: number) => void
   onUnselect?: (row: T, index: number) => void
   caption?: string
+  checked?: (item: any) => boolean
   render?: (item: T, index: number) => JSX.Element
   onSelectionChange?: (selectedItems: T[]) => void
   itemClassName?: string
   selectedIds?: string[]
 }
 
-const TableView = <T extends any>({
-  extractKey = (item: T) => {
-    try {
-      return 'id' in (item as any) ? String((item as any).id) : ''
-    } catch (e) {
-      return ''
-    }
-  },
-  itemClassName,
-  onSelectionChange,
-  selectable = false,
-  multiple = true,
-  columns,
-  data,
-  sortable = false,
-  isLoading = false,
-  onItemClick,
-  onItemDoubleClick,
-  onItemContextMenu,
-  onSortChange,
-  caption,
-  render,
-  onSelect,
-  onUnselect,
-  selectedIds = [],
-}: ITableViewProps<T>) => {
+const TableViewInner = <T extends any>(
+  {
+    extractKey = (item: T) => {
+      try {
+        return 'id' in (item as any) ? String((item as any).id) : ''
+      } catch (error) {
+        return uuidv4()
+      }
+    },
+    itemClassName,
+    onSelectionChange,
+    selectable = false,
+    multiple = true,
+    columns,
+    data,
+    sortable = false,
+    isLoading = false,
+    onItemClick,
+    onItemDoubleClick,
+    onItemContextMenu,
+    onSortChange,
+    caption,
+    render,
+    onSelect,
+    onUnselect,
+    selectedIds = [],
+  }: ITableViewProps<T>,
+  ref: React.Ref<any>
+) => {
+  const tableViewId = uuidv4()
   const [visibleColumns, setVisibleColumns] = useState<ITableColumn<T>[]>(
     columns || []
   )
@@ -106,9 +113,12 @@ const TableView = <T extends any>({
     null
   )
 
+  useEffectAfterFirstUpdate(() => {
+    setVisibleColumns(columns)
+  }, [columns])
+
   const handleSort = useCallback(
     (columnKey: string) => {
-      console.log(`column ${columnKey} clicked1`)
       const order = sortDirection === 'asc' ? 'desc' : 'asc'
       setSortColumn(columnKey)
       setSortDirection(order)
@@ -207,6 +217,7 @@ const TableView = <T extends any>({
             newSelection.add(id)
           }
         }
+
         return Array.from(newSelection)
       }
     })
@@ -221,12 +232,6 @@ const TableView = <T extends any>({
       )
     }
   }, [selectedItems])
-
-  useEffectAfterFirstUpdate(() => {
-    if (multiple) {
-      setSelectedItems(selectedIds)
-    }
-  }, [selectedIds])
 
   const onColumnVisibilityChange = (columnKey: string) => {
     setVisibleColumns((prevColumns) => {
@@ -245,8 +250,19 @@ const TableView = <T extends any>({
 
   const isAllSelected = React.useMemo(() => {
     const selectedKeys = new Set(selectedItems)
-    return data.every((item) => selectedKeys.has(extractKey(item)))
+    const itemsToCheck = Array.isArray(data) ? data : []
+    return itemsToCheck.every((item) => selectedKeys.has(extractKey(item)))
   }, [selectedItems, data, extractKey])
+
+  const renderCell = (key: string, item: T) => {
+    const value = (item as any)[key]
+
+    if (typeof value === 'string' && isValidDateString(value)) {
+      return formatDate(value)
+    }
+
+    return value
+  }
 
   if (!render) {
     render = (row: T, index: number) => {
@@ -279,13 +295,18 @@ const TableView = <T extends any>({
         >
           {selectable && (
             <TableCell>
-              <Checkbox checked={selectedItems.includes(extractKey(row))} />
+              <Checkbox
+                className='mx-2'
+                checked={selectedItems.includes(extractKey(row))}
+              />
             </TableCell>
           )}
           {visibleColumns.map((col, index) => {
             return col && 'key' in col ? (
               <TableCell key={`${col.key}-${index}`}>
-                {(row as any)[col.key]}
+                {typeof col.render === 'function'
+                  ? col.render(row, index)
+                  : renderCell(col.key, row)}
               </TableCell>
             ) : (
               <TableCell key={`actions-${index}`}>
@@ -327,19 +348,41 @@ const TableView = <T extends any>({
     }
   }
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      selectAllItems() {
+        selectAllItems()
+      },
+      toggleSelectItem(item: T, index: number, shiftKey: boolean) {
+        toggleSelectItem(item, index, shiftKey)
+      },
+      setSelectedItems(ids: string[]) {
+        setSelectedItems(ids)
+      },
+      getSelectedItems() {
+        return data.filter((item) => selectedItems.includes(extractKey(item)))
+      },
+    }),
+    [selectAllItems, toggleSelectItem]
+  )
+
   return (
     <Table>
       {caption && <TableCaption className='mt-10'>{caption}</TableCaption>}
       <TableHeader>
         <TableHeadRow>
           {selectable && (
-            <TableHead>
+            <TableHead style={{ width: 48 }}>
               {multiple && (
-                <SelectAll checked={isAllSelected} onChange={selectAllItems} />
+                <SelectAll
+                  disableHover={true}
+                  checked={isAllSelected}
+                  onChange={selectAllItems}
+                />
               )}
             </TableHead>
           )}
-
           {visibleColumns.map((col) => (
             <TableHead
               key={'key' in col ? col.key : 'actions'}
@@ -368,7 +411,7 @@ const TableView = <T extends any>({
                     >
                       <Button
                         variant='outline'
-                        className='absolute right-0 top-0 h-full px-1'
+                        className='absolute right-0 top-0 h-full min-w-2 px-1'
                       >
                         <IconCaretDownFilled className='h-5 w-5' />
                       </Button>
@@ -442,20 +485,24 @@ const TableView = <T extends any>({
       <TableBody>
         {isLoading
           ? Array.from({ length: 10 }).map((_, index) => (
-              <TableRow key={index}>
+              <TableRow key={`${tableViewId}-loading-${index}`}>
                 {columns.map((col) => (
                   <TableCell
-                    key={`skeleton-${'key' in col ? col.key : 'actions'}-${index}`}
+                    key={`${tableViewId}-loading-${index}-${'key' in col ? col.key : 'actions'}`}
                   >
                     <Skeleton className='h-8 w-full' />
                   </TableCell>
                 ))}
               </TableRow>
             ))
-          : (data ?? []).map(render)}
+          : (Array.isArray(data) ? data : []).map(render)}
       </TableBody>
     </Table>
   )
 }
+
+const TableView = React.forwardRef(TableViewInner) as <T>(
+  props: ITableViewProps<T> & { ref?: React.Ref<HTMLDivElement> }
+) => React.ReactElement
 
 export default TableView

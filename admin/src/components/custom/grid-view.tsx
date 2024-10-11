@@ -1,20 +1,35 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from 'react'
 import { Checkbox } from '../ui/checkbox'
 import { IResponsiveColumn } from '@/types/responsive-columns'
 import { IStyleOption } from '@/types/style-options'
 import useEffectAfterFirstUpdate from '@/hooks/use-effect-after-first-update'
 import { objectToString } from '@/lib/utils'
 import { SelectAll } from './select-items'
+import { useTranslation } from 'react-i18next'
+import { v4 as uuidv4 } from 'uuid'
+import { Skeleton } from '../ui/skeleton'
 
 type GridViewProps<T> = {
+  isLoading?: boolean
   responsiveColumns?: IResponsiveColumn
   data: T[]
   render?: (item: T, index: number) => JSX.Element
   styleOptions?: IStyleOption
   selectable?: boolean
   multiple?: boolean
+  checked?: (item: any) => boolean
   onSelectionChange?: (selectedItems: T[]) => void
   onItemClick?: (
+    row: T,
+    index: number,
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => void
+  onItemDoubleClick?: (
     row: T,
     index: number,
     e: React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -31,43 +46,51 @@ type GridViewProps<T> = {
   selectedIds?: string[]
 } & React.HTMLAttributes<HTMLDivElement>
 
-const GridView = <T extends any>({
-  extractKey = (item: T) => {
-    try {
-      return 'id' in (item as any) ? String((item as any).id) : ''
-    } catch (e) {
-      return ''
-    }
-  },
-  responsiveColumns = {
-    default: 1,
-    sm: 2,
-    md: 3,
-    lg: 4,
-    xl: 5,
-  },
-  styleOptions = {
-    gap: 0,
-    padding: 0,
-  },
-  data = [],
-  render,
-  selectable = false,
-  multiple = true,
-  onSelectionChange,
-  className,
-  onItemClick,
-  onItemContextMenu,
-  itemClassName,
-  onSelect,
-  onUnselect,
-  selectedIds = [],
-  ...props
-}: GridViewProps<T>) => {
+const GridViewInner = <T extends any>(
+  {
+    extractKey = (item: T) => {
+      try {
+        return 'id' in (item as any) ? String((item as any).id) : ''
+      } catch (error) {
+        return uuidv4()
+      }
+    },
+    responsiveColumns = {
+      default: 1,
+      sm: 2,
+      md: 3,
+      lg: 4,
+      xl: 5,
+    },
+    styleOptions = {
+      gap: 0,
+      padding: 0,
+    },
+    data = [],
+    render,
+    selectable = false,
+    multiple = true,
+    onSelectionChange,
+    className,
+    onItemClick,
+    onItemDoubleClick,
+    checked,
+    onItemContextMenu,
+    itemClassName,
+    onSelect,
+    onUnselect,
+    selectedIds = [],
+    isLoading = false,
+    ...props
+  }: GridViewProps<T>,
+  ref: React.Ref<any>
+) => {
+  const gridViewId = uuidv4()
   const [gridColumns, setGridColumns] = useState<number>(
     responsiveColumns.default
   )
   const [selectedItems, setSelectedItems] = useState<string[]>(selectedIds)
+  const { t } = useTranslation('select', { useSuspense: false })
 
   // Atualiza o número de colunas baseado na largura da tela
   const updateColumnsBasedOnScreenSize = () => {
@@ -180,7 +203,8 @@ const GridView = <T extends any>({
 
   const isAllSelected = React.useMemo(() => {
     const selectedKeys = new Set(selectedItems)
-    return data.every((item) => selectedKeys.has(extractKey(item)))
+    const itemsToCheck = Array.isArray(data) ? data : []
+    return itemsToCheck.every((item) => selectedKeys.has(extractKey(item)))
   }, [selectedItems, data, extractKey])
 
   if (!render) {
@@ -207,6 +231,11 @@ const GridView = <T extends any>({
           onItemClick(item, index, event)
         }
       }}
+      onDoubleClick={(event) => {
+        if (typeof onItemDoubleClick === 'function') {
+          onItemDoubleClick(item, index, event)
+        }
+      }}
     >
       {selectable && (
         <Checkbox
@@ -222,13 +251,32 @@ const GridView = <T extends any>({
     </div>
   ))
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      selectAllItems() {
+        selectAllItems()
+      },
+      toggleSelectItem(item: T) {
+        toggleSelectItem(item)
+      },
+      setSelectedItems(ids: string[]) {
+        setSelectedItems(ids)
+      },
+      getSelectedItems() {
+        return data.filter((item) => selectedItems.includes(extractKey(item)))
+      },
+    }),
+    [selectAllItems, toggleSelectItem]
+  )
+
   return (
     <div {...props}>
       {selectable && multiple && (
         <SelectAll
           checked={isAllSelected}
           onChange={selectAllItems}
-          label='Selecionar tudo'
+          label={t('selectAll')}
         />
       )}
       <div
@@ -239,10 +287,20 @@ const GridView = <T extends any>({
         }}
         className={className}
       >
-        {gridItems}
+        {isLoading
+          ? Array.from({ length: 10 }).map((_, index) => (
+              <div key={`${gridViewId}-loading-${index}`}>
+                <Skeleton className='h-8 w-full' />
+              </div>
+            ))
+          : gridItems}
       </div>
     </div>
   )
 }
+
+const GridView = React.forwardRef(GridViewInner) as <T>(
+  props: GridViewProps<T> & { ref?: React.Ref<HTMLDivElement> }
+) => React.ReactElement
 
 export default GridView

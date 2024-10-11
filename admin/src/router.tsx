@@ -23,6 +23,12 @@ const router = createBrowserRouter([
       Component: (await import('./pages/auth/otp.tsx')).default,
     }),
   },
+  {
+    path: '/tests',
+    lazy: async () => ({
+      Component: (await import('./pages/tests/index.tsx')).default,
+    }),
+  },
 
   // Main routes
   {
@@ -40,14 +46,26 @@ const router = createBrowserRouter([
         }),
       },
       {
-        path: 'examples',
-        lazy: async () => ({
-          Component: (await import('./pages/test/index.tsx')).default,
-        }),
+        path: 'contacts',
+        children: [
+          {
+            index: true,
+            lazy: async () => ({
+              Component: (await import('./pages/contacts/index.tsx')).default,
+            }),
+          },
+        ],
       },
+
       {
         path: 'management',
         children: [
+          {
+            path: '',
+            lazy: async () => ({
+              Component: (await import('./pages/management/index.tsx')).default,
+            }),
+          },
           {
             path: 'users',
             lazy: async () => ({
@@ -77,10 +95,87 @@ const router = createBrowserRouter([
             }),
           },
           {
+            path: 'persons',
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('./pages/contacts/index.tsx'))
+                    .default,
+                }),
+              },
+              {
+                path: 'address-types',
+                lazy: async () => ({
+                  Component: (
+                    await import(
+                      './pages/management/persons/address-types/index.tsx'
+                    )
+                  ).default,
+                }),
+              },
+              {
+                path: 'contact-types',
+                lazy: async () => ({
+                  Component: (
+                    await import(
+                      './pages/management/persons/contact-types/index.tsx'
+                    )
+                  ).default,
+                }),
+              },
+              {
+                path: 'custom-types',
+                lazy: async () => ({
+                  Component: (
+                    await import(
+                      './pages/management/persons/custom-types/index.tsx'
+                    )
+                  ).default,
+                }),
+              },
+              {
+                path: 'document-types',
+                lazy: async () => ({
+                  Component: (
+                    await import(
+                      './pages/management/persons/document-types/index.tsx'
+                    )
+                  ).default,
+                }),
+              },
+              {
+                path: 'person-types',
+                lazy: async () => ({
+                  Component: (
+                    await import(
+                      './pages/management/persons/person-types/index.tsx'
+                    )
+                  ).default,
+                }),
+              },
+            ],
+          },
+          {
+            path: 'routes',
+            lazy: async () => ({
+              Component: (await import('./pages/management/routes/index.tsx'))
+                .default,
+            }),
+          },
+          {
             path: 'settings',
             lazy: async () => ({
               Component: (await import('./pages/management/settings/index.tsx'))
                 .default,
+            }),
+          },
+          {
+            path: 'settings-options',
+            lazy: async () => ({
+              Component: (
+                await import('./pages/management/settings-options/index.tsx')
+              ).default,
             }),
             errorElement: <GeneralError />,
             children: [
@@ -89,7 +184,7 @@ const router = createBrowserRouter([
                 lazy: async () => ({
                   Component: (
                     await import(
-                      './pages/management/settings/profile/index.tsx'
+                      './pages/management/settings-options/profile/index.tsx'
                     )
                   ).default,
                 }),
@@ -99,7 +194,7 @@ const router = createBrowserRouter([
                 lazy: async () => ({
                   Component: (
                     await import(
-                      './pages/management/settings/account/index.tsx'
+                      './pages/management/settings-options/account/index.tsx'
                     )
                   ).default,
                 }),
@@ -109,7 +204,7 @@ const router = createBrowserRouter([
                 lazy: async () => ({
                   Component: (
                     await import(
-                      './pages/management/settings/appearance/index.tsx'
+                      './pages/management/settings-options/appearance/index.tsx'
                     )
                   ).default,
                 }),
@@ -119,7 +214,7 @@ const router = createBrowserRouter([
                 lazy: async () => ({
                   Component: (
                     await import(
-                      './pages/management/settings/notifications/index.tsx'
+                      './pages/management/settings-options/notifications/index.tsx'
                     )
                   ).default,
                 }),
@@ -129,7 +224,7 @@ const router = createBrowserRouter([
                 lazy: async () => ({
                   Component: (
                     await import(
-                      './pages/management/settings/display/index.tsx'
+                      './pages/management/settings-options/display/index.tsx'
                     )
                   ).default,
                 }),
@@ -139,7 +234,7 @@ const router = createBrowserRouter([
                 lazy: async () => ({
                   Component: (
                     await import(
-                      './pages/management/settings/error-example/index.tsx'
+                      './pages/management/settings-options/error-example/index.tsx'
                     )
                   ).default,
                 }),

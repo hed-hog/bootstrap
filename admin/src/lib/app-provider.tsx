@@ -122,9 +122,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       instance.interceptors.request.use(
         (cnf) => {
           if (token) {
-            console.info('setting token in request')
             cnf.headers['Authorization'] = `Bearer ${token}`
           }
+
+          cnf.headers['Accept-Language'] =
+            localStorage.getItem('i18nextLng') ?? 'en'
           return cnf
         },
         (error) => {
@@ -138,7 +140,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           return response
         },
         (error) => {
-          console.log('request error', error)
+          console.error('request error', error)
           handleError(error)
           return Promise.reject(error)
         }
@@ -258,7 +260,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
                             )}
                           </DialogHeader>
                         )}
-                        <div className='flex-1 overflow-y-auto'>
+                        <div className='mt-8 flex flex-1 overflow-y-auto'>
                           {React.createElement(children, {
                             ...props,
                             block: children,
@@ -318,7 +320,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
                   onOpenChange={(value) => !value && closeSheet(id)}
                 >
                   <SheetContent
-                    className={`flex flex-col ${['bottom', 'top'].includes(side) && 'max-h-full'}`}
+                    className={`flex flex-col ${['bottom', 'top'].includes(side ?? '') && 'max-h-full'}`}
                     side={side}
                   >
                     {(title || description) && (
@@ -329,7 +331,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
                         )}
                       </SheetHeader>
                     )}
-                    <div className='flex-1 overflow-y-auto'>
+                    <div className='mt-8 flex flex-1 overflow-y-auto'>
                       {React.createElement(children, {
                         ...props,
                         block: children,

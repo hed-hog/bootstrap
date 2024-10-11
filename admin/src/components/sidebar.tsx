@@ -6,9 +6,8 @@ import Nav from './nav'
 import { cn } from '@/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { useApp } from '@/hooks/use-app'
-import { toPascalCase } from '@/lib/toPascalCase'
-import * as TablerIcons from '@tabler/icons-react'
-import { SideLink } from '@/data/sidelinks'
+import { getSideLinks } from '@/lib/get-sidelinks'
+import { useTranslation } from 'react-i18next'
 
 interface SidebarProps extends React.HTMLAttributes<HTMLElement> {
   isCollapsed: boolean
@@ -20,51 +19,16 @@ export default function Sidebar({
   isCollapsed,
   setIsCollapsed,
 }: SidebarProps) {
+  const { t, i18n: {language} } = useTranslation()
   const { request } = useApp()
   const [navOpened, setNavOpened] = useState(false)
-  const { data, isLoading } = useQuery({
-    queryKey: ['menus-system'],
+  const { data } = useQuery({
+    queryKey: ['menus-system', language],
     queryFn: () =>
       request({
         url: `/menus/system`,
       }),
   })
-
-  const getSideLinkIcon = (icon: string) => {
-    if (icon !== '' && icon.length > 0) {
-      const componentName = 'Icon' + toPascalCase(icon)
-      const IconComponent = TablerIcons[
-        componentName as keyof typeof TablerIcons
-      ] as React.FC<{ size?: number }>
-      if (IconComponent) {
-        return <IconComponent size={18} />
-      }
-    }
-    return <TablerIcons.IconSquare size={18} />
-  }
-
-  const getSideLinks = (items: any[]) => {
-    const links: SideLink[] = []
-
-    for (let i = 0; i < items.length; i++) {
-      const link: SideLink = {
-        href: items[i].url ?? '',
-        icon: getSideLinkIcon(items[i].icon),
-        title: items[i].name,
-        sub:
-          items[i].menus && items[i].menus.length > 0
-            ? getSideLinks(items[i].menus)
-            : [],
-      }
-
-      if (link.sub?.length === 0) {
-        delete link.sub
-      }
-
-      links.push(link)
-    }
-    return links
-  }
 
   let sideLinks = getSideLinks((data?.data as any[]) || [])
 
@@ -108,9 +72,9 @@ export default function Sidebar({
               viewBox='0 0 24 24'
               fill='none'
               stroke='currentColor'
-              stroke-width='2'
-              stroke-linecap='round'
-              stroke-linejoin='round'
+              strokeWidth='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
               className={`transition-all ${isCollapsed ? 'h-6 w-6' : 'h-8 w-8'}`}
             >
               <path stroke='none' d='M0 0h24v24H0z' fill='none' />
@@ -122,7 +86,7 @@ export default function Sidebar({
               className={`flex flex-col justify-end truncate ${isCollapsed ? 'invisible w-0' : 'visible w-auto'}`}
             >
               <span className='font-medium'>HedHog</span>
-              <span className='text-xs'>Administration Panel</span>
+              <span className='text-xs'>{t('slogan')}</span>
             </div>
           </div>
 
@@ -154,7 +118,7 @@ export default function Sidebar({
           onClick={() => setIsCollapsed((prev) => !prev)}
           size='icon'
           variant='outline'
-          className='absolute -right-5 top-1/2 z-50 hidden rounded-full md:inline-flex'
+          className='absolute -right-5 top-1/2 z-50 hidden min-w-2 rounded-full md:inline-flex'
         >
           <IconChevronsLeft
             stroke={1.5}
