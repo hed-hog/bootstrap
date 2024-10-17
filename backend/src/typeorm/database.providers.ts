@@ -24,8 +24,10 @@ if (!process.env.DB_DATABASE) {
   throw new Error('DB_DATABASE not defined on .env file');
 }
 
+const type = String(process.env.DATABASE_URL).split(':')[0] === 'mysql' ? 'mysql' : 'postgres';
+
 const opts: DataSourceOptions = {
-  type: 'postgres',
+  type,
   host: String(process.env.DB_HOST),
   port: Number(process.env.DB_PORT),
   username: String(process.env.DB_USERNAME),
