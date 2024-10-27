@@ -19,6 +19,7 @@
     "migrate:up": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:run -d ./src/typeorm/database.providers.ts && npm run prisma:pull && npm run prisma:generate",
     "prisma:generate": "npx prisma generate --schema=./src/prisma/schema.prisma",
     "prisma:pull": "npx prisma db pull --schema=./src/prisma/schema.prisma",
+    "prisma:update": "npm run prisma:pull && npm run prisma:generate",
     "migrate": "ts-node ./scripts/migrate",
     "typeorm": "ts-node --transpile-only ./node_modules/typeorm/cli.js"
   },
