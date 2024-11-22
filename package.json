@@ -14,5 +14,8 @@
   "description": "A HedHog project",
   "devDependencies": {
     "@hedhog/cli": "latest"
+  },
+  "dependencies": {
+    "@hedhog/utils": "^0.0.27"
   }
 }
