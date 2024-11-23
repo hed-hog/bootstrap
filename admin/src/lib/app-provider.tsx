@@ -1,18 +1,4 @@
-import { useToast } from '@/components/ui/use-toast'
-import useLocalStorage, { LocalStorageKeys } from '@/hooks/use-local-storage'
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
-import React, {
-  createContext,
-  Fragment,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useState,
-} from 'react'
-import { Toaster } from 'sonner'
-import { decodeToken } from './decodeToken'
-import { QueryClientProvider } from './query-provider'
-import { useMediaQuery } from 'usehooks-ts'
+import { Button, ButtonProps } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -29,7 +15,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
-import { Button } from '@/components/custom/button'
 import {
   Sheet,
   SheetContent,
@@ -38,13 +23,35 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { useDialog } from '@/hooks/use-dialog'
+import useLocalStorage, { LocalStorageKeys } from '@/hooks/use-local-storage'
+import { useSheet } from '@/hooks/use-sheet'
 import { DialogType, OpenDialogType } from '@/types/dialog'
 import { OpenSheetType, SheetType } from '@/types/sheet'
-import { useDialog } from '@/hooks/use-dialog'
-import { useSheet } from '@/hooks/use-sheet'
-import { getBaseURL } from './getBaseURL'
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import React, {
+  createContext,
+  Fragment,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react'
+import { useTranslation } from 'react-i18next'
+import { toast, Toaster } from 'sonner'
+import { useMediaQuery } from 'usehooks-ts'
+import { decodeToken } from './decode-token'
+import { getBaseURL } from './get-base-url'
+import { QueryClientProvider } from './query-provider'
 
 export const BASE_URL = getBaseURL()
+
+export type AppConfirmDialogType = {
+  title?: string
+  description?: string
+  cancelButton?: ButtonProps & { text: string }
+  okButton?: ButtonProps & { text: string }
+}
 
 type AppContextType = {
   logout: () => void
@@ -57,6 +64,13 @@ type AppContextType = {
   closeDialog: (id: string) => void
   openSheet: (props: OpenSheetType) => string
   closeSheet: (id: string) => void
+  showToastHandler: (
+    type: 'success' | 'error',
+    name: string,
+    action: string,
+    error?: any
+  ) => void
+  confirm: (props: AppConfirmDialogType) => Promise<void>
 }
 
 export const AppContext = createContext<AppContextType>({
@@ -68,6 +82,8 @@ export const AppContext = createContext<AppContextType>({
   closeDialog: () => {},
   openSheet: () => '',
   closeSheet: () => {},
+  showToastHandler: () => {},
+  confirm: () => new Promise(() => {}),
 })
 
 type RequestLoginType = {
@@ -79,7 +95,7 @@ export type AppProviderProps = {
 }
 
 export const AppProvider = ({ children }: AppProviderProps) => {
-  const { toast } = useToast()
+  const { t } = useTranslation(['module', 'success', 'error'])
   const isDesktop = useMediaQuery('(min-width: 768px)')
   const [dialogs, setDialogs] = useState<DialogType[]>([])
   const [sheets, setSheets] = useState<SheetType[]>([])
@@ -96,22 +112,47 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   const { openDialog, closeDialog } = useDialog(dialogs, setDialogs)
   const { openSheet, closeSheet } = useSheet(sheets, setSheets)
 
+  const confirm = useCallback(
+    ({ title, description, okButton, cancelButton }: AppConfirmDialogType) => {
+      return new Promise<void>((resolve, reject) => {
+        const id = openDialog({
+          title,
+          description,
+          buttons: [
+            cancelButton ?? {
+              text: t('cancel', { ns: 'actions' }),
+              variant: 'secondary',
+              onClick: () => {
+                closeDialog(id)
+                reject()
+              },
+            },
+            okButton ?? {
+              text: t('ok', { ns: 'actions' }),
+              variant: 'default',
+              onClick: () => {
+                closeDialog(id)
+                resolve()
+              },
+            },
+          ],
+        })
+      })
+    },
+    []
+  )
+
   const handleError = (error: any) => {
-    console.log('handleError', error)
     switch (error.code) {
       case 'ERR_NETWORK':
-        toast({
-          title: 'Servidor indisponível',
-          description: `Por favor tente novamente mais tarde`,
-          variant: 'destructive',
-        })
+        toast.error('Network error')
         break
       default:
-        toast({
-          title: 'Error',
-          description: 'An error occurred',
-          variant: 'destructive',
-        })
+        toast.error(
+          error?.response?.data?.message ??
+            error?.message ??
+            'An error occurred'
+        )
     }
   }
 
@@ -140,7 +181,6 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           return response
         },
         (error) => {
-          console.error('request error', error)
           handleError(error)
           return Promise.reject(error)
         }
@@ -159,11 +199,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         const parsed = JSON.parse(decoded)
 
         if (parsed.exp * 1000 < Date.now()) {
-          toast({
-            title: 'Error',
-            description: 'Token expired',
-            variant: 'destructive',
-          })
+          toast.error('Token expired')
           setToken('')
         }
 
@@ -188,23 +224,34 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
         if (data.token) {
           setToken(data.token)
-          toast({
-            title: 'Success',
-            description: 'Logged in successfully',
-            variant: 'default',
-          })
+          toast.success('Login successful')
         }
 
         resolve()
       } catch (error) {
-        toast({
-          title: 'Error',
-          description: (error as any).response.data.message,
-          variant: 'destructive',
-        })
+        toast.error('Login failed')
         reject()
       }
     })
+  }
+
+  const showToastHandler = (
+    type: 'success' | 'error',
+    name: string,
+    action: string,
+    error: any = null
+  ) => {
+    switch (type) {
+      case 'success':
+        return toast.success(
+          `${t(name, { ns: 'module' })} ${t(action, { ns: 'success' })}`
+        )
+      case 'error':
+        toast.error(
+          `${t(action, { ns: 'error' })} ${t(name, { ns: 'module' })}` +
+            error.message
+        )
+    }
   }
 
   const logout = () => {
@@ -229,6 +276,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           closeDialog,
           openSheet,
           closeSheet,
+          showToastHandler,
+          confirm,
         }}
       >
         <QueryClientProvider>
@@ -260,15 +309,28 @@ export const AppProvider = ({ children }: AppProviderProps) => {
                             )}
                           </DialogHeader>
                         )}
-                        <div className='mt-8 flex flex-1 overflow-y-auto'>
-                          {React.createElement(children, {
-                            ...props,
-                            block: children,
-                          })}
-                        </div>
+                        {children && (
+                          <div
+                            key={`${id}-body`}
+                            className='mt-8 flex flex-1 overflow-y-auto'
+                          >
+                            {React.createElement(children, {
+                              ...props,
+                              block: children,
+                            })}
+                          </div>
+                        )}
+                        {!children && (
+                          <div key={`${id}-space`} className='h-4' />
+                        )}
                         <DialogFooter className='gap-1 sm:justify-end'>
-                          {(buttons ?? []).map(({ text, ...props }) => (
-                            <Button {...props}>{text}</Button>
+                          {(buttons ?? []).map(({ text, ...props }, index) => (
+                            <Button
+                              key={`${id}-footer-btn-${index}`}
+                              {...props}
+                            >
+                              {text}
+                            </Button>
                           ))}
                         </DialogFooter>
                       </DialogContent>
@@ -289,12 +351,17 @@ export const AppProvider = ({ children }: AppProviderProps) => {
                             )}
                           </DrawerHeader>
                         )}
-                        <div className='px-4'>
-                          {React.createElement(children, {
-                            ...props,
-                            block: children,
-                          })}
-                        </div>
+                        {children && (
+                          <div key={`${id}-body`} className='px-4'>
+                            {React.createElement(children, {
+                              ...props,
+                              block: children,
+                            })}
+                          </div>
+                        )}
+                        {!children && (
+                          <div key={`${id}-space`} className='h-4' />
+                        )}
                         <DrawerFooter className='gap-1 sm:justify-end'>
                           {(buttons ?? []).map(({ text, ...props }) => (
                             <Button {...props}>{text}</Button>
@@ -331,12 +398,18 @@ export const AppProvider = ({ children }: AppProviderProps) => {
                         )}
                       </SheetHeader>
                     )}
-                    <div className='mt-8 flex flex-1 overflow-y-auto'>
-                      {React.createElement(children, {
-                        ...props,
-                        block: children,
-                      })}
-                    </div>
+                    {children && (
+                      <div
+                        key={`${id}-body`}
+                        className='mt-8 flex flex-1 overflow-y-auto'
+                      >
+                        {React.createElement(children, {
+                          ...props,
+                          block: children,
+                        })}
+                      </div>
+                    )}
+                    {!children && <div key={`${id}-space`} className='h-4' />}
                     <SheetFooter>
                       {(buttons ?? []).map(({ text, ...props }) => (
                         <Button {...props}>{text}</Button>

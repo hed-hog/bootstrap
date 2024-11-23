@@ -1,4 +1,4 @@
-import Nav from '@/components/nav'
+import Nav from '@/components/navs/nav'
 import { useApp } from '@/hooks/use-app'
 import { getSideLinks } from '@/lib/get-sidelinks'
 import { useQuery } from '@tanstack/react-query'
@@ -8,14 +8,14 @@ export default function Management() {
   const { request } = useApp()
 
   const { data } = useQuery({
-    queryKey: ['menus-system'],
+    queryKey: ['menu-system'],
     queryFn: () =>
       request({
-        url: `/menus/system`,
+        url: `/menu/system`,
       }),
   })
 
-  let sideLinks = getSideLinks((data?.data as any[]) || [])
+  const sideLinks = getSideLinks((data?.data as any[]) || [])
 
   return (
     <>

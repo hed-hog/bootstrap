@@ -8,7 +8,10 @@ export enum EnumFieldType {
   CHECKBOX = 'checkbox',
   RANGE = 'range',
   SELECT = 'select',
+  COMBOBOX = 'combobox',
   MULTISELECT = 'multiselect',
   DATEPICKER = 'datepicker',
   SHEETPICKER = 'sheetpicker',
+  SWITCH = 'switch',
+  SWITCH_LIST = 'switchlist',
 }

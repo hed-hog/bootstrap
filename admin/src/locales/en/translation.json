@@ -1,5 +1,10 @@
 {
   "en": "English",
   "pt": "Portuguese",
-  "slogan": "Administration Panel"
+  "slogan": "Administration Panel",
+  "selectTimezone": "Select Timezone",
+  "apply": "Apply",
+  "name": "Name",
+  "description": "Description",
+  "slug": "Slug"
 }

@@ -1,14 +1,14 @@
 import { useApp } from '@/hooks/use-app'
 import { useQuery } from '@tanstack/react-query'
 
-export function useCountries() {
+export function useCountry() {
   const { request } = useApp()
 
   return useQuery({
-    queryKey: ['countries'],
+    queryKey: ['country'],
     queryFn: () =>
-      request({
-        url: `/countries`,
+      request<any[]>({
+        url: `/country`,
       }),
   })
 }

@@ -6,5 +6,9 @@
   "apply": "Aplicar",
   "cancel": "Cancelar",
   "details": "Detalhes",
-  "save": "Salvar"
+  "save": "Salvar",
+  "ok": "Ok",
+  "item": "item",
+  "items": "itens",
+  "selected": "selecionado"
 }

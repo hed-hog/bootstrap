@@ -20,6 +20,7 @@ export interface IStylingProps {
 
 export interface ILabelProps extends IStylingProps {
   text?: string
+  small?: string
 }
 
 export interface ITextProps {
@@ -40,16 +41,20 @@ export type FieldType =
   | EnumFieldType.RANGE
   | EnumFieldType.FILE
   | EnumFieldType.PASSWORD
+  | EnumFieldType.COMBOBOX
+  | EnumFieldType.SWITCH
 
 export interface IFormFieldPropsBase {
   name: string
   type: FieldType
   defaultValue?: any
+  value?: any
+  onChange?: (value: any) => void
   label?: ILabelProps
   description?: ILabelProps
   input?: IStylingProps
   container?: IStylingProps
-  required: boolean
+  required?: boolean
   options?: IFormFieldOption[]
 }
 
@@ -73,12 +78,12 @@ export interface IMultiSelectFieldProps extends IFormFieldPropsBase {
   checkbox?: IStylingProps
 }
 
-export interface IFormPanelProps {
+export type FormPanelProps = {
   title?: ITextProps
   subtitle?: ITextProps
   button?: ITextProps
   fields: IFormFieldPropsBase[]
-  form: UseFormReturn<FieldValues>
+  form?: UseFormReturn<FieldValues>
   onSubmit?: (data: any) => void
 }
 
@@ -91,7 +96,7 @@ export interface IFormValues {
   description?: string
   city?: string[]
   cities?: string[]
-  files?: FileList
+  file?: FileList
   cidades?: string
   terms?: boolean
   percentage?: number
@@ -100,6 +105,7 @@ export interface IFormValues {
 
 export type FieldProps = {
   value: string
+  name?: string
   onChange: (value: string) => void
   required: boolean
   label?: ILabelProps

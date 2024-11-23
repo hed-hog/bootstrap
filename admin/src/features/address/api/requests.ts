@@ -1,50 +1,50 @@
 import { useApp } from '@/hooks/use-app'
-import { PersonAddress } from '@/types/address'
+import { Delete } from '@/types/delete'
+import { HttpMethod } from '@/types/http-method'
+import { PersonAddress } from '@/types/models'
 
 export function requests() {
   const { request } = useApp()
 
-  const createAddress = async (params: {
+  const addressCreate = async (params: {
     personId: number
     data: PersonAddress
   }) => {
     const { personId, data } = params
-    return request({
-      url: `/persons/${personId}/address`,
-      method: 'post',
+    return request<PersonAddress>({
+      url: `/person/${personId}/address`,
+      method: HttpMethod.POST,
       data,
-    }).then((res) => res.data)
+    })
   }
 
-  const editAddress = async (params: {
+  const addressUpdate = async (params: {
     personId: number
     addressId: string
     data: PersonAddress
   }) => {
     const { personId, addressId, data } = params
-
-    return request({
-      url: `/persons/${personId}/address/${addressId}`,
-      method: 'patch',
+    return request<PersonAddress>({
+      url: `/person/${personId}/address/${addressId}`,
+      method: HttpMethod.PATCH,
       data,
-    }).then((res) => res.data)
+    })
   }
 
-  const deleteAddress = async (params: {
+  const addressDelete = async (params: {
     personId: number
     addressId: string
   }) => {
     const { personId, addressId } = params
-
-    return request({
-      url: `/persons/${personId}/address/${addressId}`,
-      method: 'delete',
-    }).then((res) => res.data)
+    return request<Delete>({
+      url: `/person/${personId}/address/${addressId}`,
+      method: HttpMethod.DELETE,
+    })
   }
 
   return {
-    createAddress,
-    editAddress,
-    deleteAddress,
+    addressCreate,
+    addressUpdate,
+    addressDelete,
   }
 }

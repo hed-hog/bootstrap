@@ -1,4 +1,4 @@
-import GridView from '@/components/custom/grid-view'
+import GridView from '@/components/views/grid-view'
 import type { Meta, StoryObj } from '@storybook/react'
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
@@ -16,7 +16,7 @@ const meta = {
         <ul>
           <li>**Responsive Grid**: Adjusts the number of columns based on screen size.</li>
           <li>**Data Customization**: Easily pass in an array of objects to display in the grid.</li>
-          <li>**Styling Options**: Control padding and gap between items with \`styleOptions\.</li>
+          <li>**Styling Options**: Control padding and gap between items with styleOptions.</li>
         </ul>
         `,
       },

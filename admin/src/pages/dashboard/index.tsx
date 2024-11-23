@@ -1,4 +1,4 @@
-import { Button } from '@/components/custom/button'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -7,14 +7,12 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { RecentSales } from './components/recent-sales'
 import { Overview } from './components/overview'
-import Test from '../tests'
+import { RecentSales } from './components/recent-sales'
 
 export default function Dashboard() {
   return (
     <>
-      <Test />
       <div className='mb-2 flex items-center justify-between space-y-2'>
         <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>
         <div className='flex items-center space-x-2'>
@@ -47,7 +45,7 @@ export default function Dashboard() {
         </div>
         <TabsContent value='overview' className='space-y-4'>
           <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-            <Card className='border-primary'>
+            <Card className='rounded-md'>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                 <CardTitle className='text-sm font-medium'>
                   Total Revenue
@@ -72,7 +70,7 @@ export default function Dashboard() {
                 </p>
               </CardContent>
             </Card>
-            <Card className='border-primary'>
+            <Card className='rounded-md'>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                 <CardTitle className='text-sm font-medium'>
                   Subscriptions
@@ -99,7 +97,7 @@ export default function Dashboard() {
                 </p>
               </CardContent>
             </Card>
-            <Card className='border-primary'>
+            <Card className='rounded-md'>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                 <CardTitle className='text-sm font-medium'>Sales</CardTitle>
                 <svg
@@ -123,7 +121,7 @@ export default function Dashboard() {
                 </p>
               </CardContent>
             </Card>
-            <Card className='border-primary'>
+            <Card className='rounded-md'>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                 <CardTitle className='text-sm font-medium'>
                   Active Now
@@ -150,7 +148,7 @@ export default function Dashboard() {
             </Card>
           </div>
           <div className='grid grid-cols-1 gap-4 lg:grid-cols-7'>
-            <Card className='col-span-1 border-primary lg:col-span-4'>
+            <Card className='col-span-1 rounded-md lg:col-span-4'>
               <CardHeader>
                 <CardTitle>Overview</CardTitle>
               </CardHeader>
@@ -158,7 +156,7 @@ export default function Dashboard() {
                 <Overview />
               </CardContent>
             </Card>
-            <Card className='col-span-1 border-primary lg:col-span-3'>
+            <Card className='col-span-1 rounded-md lg:col-span-3'>
               <CardHeader>
                 <CardTitle>Recent Sales</CardTitle>
                 <CardDescription>

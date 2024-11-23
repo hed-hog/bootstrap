@@ -1,4 +1,4 @@
-import { ColorPickerField } from '@/components/custom/color-picker-field'
+import { ColorPickerField } from '@/components/pickers/color-picker-field'
 import { ColorPickerFieldVariant } from '@/enums/EnumColorPickerFieldVariant'
 import type { Meta, StoryObj } from '@storybook/react'
 
@@ -9,7 +9,7 @@ const meta: Meta<typeof ColorPickerField> = {
     layout: 'centered',
     docs: {
       description: {
-        component: `ColorPickerField is a flexible and user-friendly color picker component designed for React applications. It allows users to select colors through an interactive interface, making it perfect for form inputs, design tools, or any application requiring color selection.`,
+        component: `ColorPickerField is a flexible and user-friendly color picker component designed for React applications. It allows user to select colors through an interactive interface, making it perfect for form inputs, design tools, or any application requiring color selection.`,
       },
     },
   },

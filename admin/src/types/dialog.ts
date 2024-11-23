@@ -1,4 +1,4 @@
-import { ButtonProps } from '@/components/custom/button'
+import { ButtonProps } from '@/components/ui/button'
 import { FunctionComponent } from 'react'
 
 export type DialogType = {
@@ -10,7 +10,7 @@ export type DialogType = {
 export type OpenDialogType = {
   title?: string
   description?: string
-  children: FunctionComponent<any>
+  children?: FunctionComponent<any>
   buttons?: (ButtonProps & { text: string })[]
   props?: any
 }
