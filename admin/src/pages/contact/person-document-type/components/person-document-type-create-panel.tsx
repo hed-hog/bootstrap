@@ -19,7 +19,7 @@ export type PersonDocumentTypeCreatePanelProps = {
 const PersonDocumentTypeCreatePanel = forwardRef(
   ({ onCreated }: PersonDocumentTypeCreatePanelProps, ref) => {
     const formRef = useRef<FormPanelRef>(null);
-    const { t } = useTranslation(["actions"]);
+    const { t } = useTranslation(["actions", "fields", "translations"]);
     const { mutateAsync: createPersonDocumentType } =
       usePersonDocumentTypeCreate();
 
@@ -39,14 +39,19 @@ const PersonDocumentTypeCreatePanel = forwardRef(
         fields={[
           {
             name: "country_id",
-            label: { text: t("country_id", { ns: "translation" }) },
-            type: EnumFieldType.TEXT,
+            label: {
+              text: t("person_document_type.country_id", { ns: "fields" }),
+            },
+            type: EnumFieldType.COMBOBOX,
             required: true,
+            url: "/country",
+            displayName: "country",
+            valueName: "id",
           },
 
           {
             name: "slug",
-            label: { text: t("slug", { ns: "translation" }) },
+            label: { text: t("person_document_type.slug", { ns: "fields" }) },
             type: EnumFieldType.TEXT,
             required: true,
           },
@@ -55,9 +60,11 @@ const PersonDocumentTypeCreatePanel = forwardRef(
         ]}
         button={{ text: t("create", { ns: "actions" }) }}
         onSubmit={async (data) => {
-          const createdData = await createPersonDocumentType(data);
+          const createdData = await createPersonDocumentType({
+            data,
+          });
           if (typeof onCreated === "function") {
-            onCreated(createdData);
+            onCreated(createdData as any);
           }
         }}
       />

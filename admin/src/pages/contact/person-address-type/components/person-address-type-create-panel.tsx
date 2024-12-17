@@ -19,7 +19,7 @@ export type PersonAddressTypeCreatePanelProps = {
 const PersonAddressTypeCreatePanel = forwardRef(
   ({ onCreated }: PersonAddressTypeCreatePanelProps, ref) => {
     const formRef = useRef<FormPanelRef>(null);
-    const { t } = useTranslation(["actions"]);
+    const { t } = useTranslation(["actions", "fields", "translations"]);
     const { mutateAsync: createPersonAddressType } =
       usePersonAddressTypeCreate();
 
@@ -39,7 +39,7 @@ const PersonAddressTypeCreatePanel = forwardRef(
         fields={[
           {
             name: "slug",
-            label: { text: t("slug", { ns: "translation" }) },
+            label: { text: t("person_address_type.slug", { ns: "fields" }) },
             type: EnumFieldType.TEXT,
             required: true,
           },
@@ -48,9 +48,11 @@ const PersonAddressTypeCreatePanel = forwardRef(
         ]}
         button={{ text: t("create", { ns: "actions" }) }}
         onSubmit={async (data) => {
-          const createdData = await createPersonAddressType(data);
+          const createdData = await createPersonAddressType({
+            data,
+          });
           if (typeof onCreated === "function") {
-            onCreated(createdData);
+            onCreated(createdData as any);
           }
         }}
       />

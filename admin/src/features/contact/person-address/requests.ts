@@ -2,49 +2,62 @@ import { useApp } from "@/hooks/use-app";
 import { Delete, PaginationParams, PaginationResult } from "@/types";
 import { PersonAddressType } from "@/types/models";
 import { HttpMethod } from "@/types/http-method";
-import { formatDataWithLocale } from "@hedhog/utils";
 
 export function requests() {
   const { request } = useApp();
 
   const personAddressList = async (
     personId: number,
-    params: PaginationParams & { typeId?: number; addressId?: number },
+    params: PaginationParams & { id?: number },
   ) => {
     return request<PaginationResult<PersonAddressType>>({
-      url: `/person/${personId}/address`,
+      url: `/person/${personId}/person-address`,
       params,
     }).then((res) => res.data);
   };
 
-  const personAddressCreate = async (
-    personId: number,
-    data: PersonAddressType,
-  ) => {
+  const personAddressCreate = async (params: {
+    personId: number;
+    data: PersonAddressType;
+  }) => {
+    const { personId, data } = params;
+
     return request<PersonAddressType>({
-      url: `/person/${personId}/address`,
+      url: `/person/${personId}/person-address`,
       method: HttpMethod.POST,
-      data: formatDataWithLocale(data),
+      data: data,
     }).then((res) => res.data);
   };
 
-  const personAddressUpdate = async (
-    personId: number,
-    addressId: number,
-    data: PersonAddressType,
-  ) => {
+  const personAddressUpdate = async (params: {
+    personId: number;
+    id: number;
+    data: PersonAddressType;
+  }) => {
+    const { personId, id, data } = params;
+
     return request<PersonAddressType>({
-      url: `/person/${personId}/address/${addressId}`,
+      url: `/person/${personId}/person-address/${id}`,
       method: HttpMethod.PATCH,
-      data: formatDataWithLocale(data),
+      data: data,
     }).then((res) => res.data);
   };
 
-  const personAddressDelete = async (personId: number, ids: number[]) => {
+  const personAddressDelete = async (params: { id: number; ids: number[] }) => {
+    const { id, ids } = params;
+
     return request<Delete>({
-      url: `/person/${personId}/address`,
+      url: `/person/${id}/person-address`,
       method: HttpMethod.DELETE,
       data: { ids },
+    }).then((res) => res.data);
+  };
+
+  const personAddressGet = async (params: { personId: number; id: number }) => {
+    const { personId, id } = params;
+
+    return request<PersonAddressType>({
+      url: `/person/${personId}/person-address/${id}`,
     }).then((res) => res.data);
   };
 
@@ -53,5 +66,6 @@ export function requests() {
     personAddressUpdate,
     personAddressDelete,
     personAddressList,
+    personAddressGet,
   };
 }

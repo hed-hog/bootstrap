@@ -1,8 +1,3 @@
-import useEffectAfterFirstUpdate from '@/hooks/use-effect-after-first-update'
-import { cn } from '@/lib/utils'
-import { Check, ChevronsUpDown } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   Command,
@@ -10,7 +5,6 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
-  CommandList,
 } from '@/components/ui/command'
 import { FormControl } from '@/components/ui/form'
 import {
@@ -18,43 +12,70 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { useApp } from '@/hooks/use-app'
+import useEffectAfterFirstUpdate from '@/hooks/use-effect-after-first-update'
+import { cn } from '@/lib/utils'
+import { useQuery } from '@tanstack/react-query'
+import { Check, ChevronsUpDown } from 'lucide-react'
+import { Fragment, useEffect, useState } from 'react'
 
 export type ComboboxPrps = {
   value?: string
   onChange?: (value: string) => void
-  options: { label: string; value: string }[]
+  url: string
+  displayName?: string
+  valueName?: string
 }
 
 export function Combobox(props: ComboboxPrps) {
-  const { t } = useTranslation()
+  const displayName = props.displayName ? props.displayName : 'name'
+  const valueName = props.valueName ? props.valueName : 'id'
+
+  const { request } = useApp()
   const [open, setOpen] = useState(false)
-  const [value, setValue] = useState(props.value || '')
-  const [options, setOptions] = useState(props.options || [])
+  const [value, setValue] = useState<any>(props.value)
+  const [options, setOptions] = useState<any[]>([])
+  const [lastValueOnChange, setLastValueOnChange] = useState('')
 
-  useEffectAfterFirstUpdate(() => {
-    if (typeof props.onChange === 'function' && value !== props.value) {
-      console.log('Combobox useEffectAfterFirstUpdate', {
-        value,
-      })
+  const { data } = useQuery({
+    queryKey: [props.url],
+    queryFn: () =>
+      request({
+        url: props.url,
+      }),
+  })
 
-      const index = options.findIndex(
-        (option) =>
-          option.value.toLocaleLowerCase() === value.toLocaleLowerCase()
+  useEffect(() => {
+    if (data) {
+      setOptions(
+        (data?.data as any).data.map((item: any) => ({
+          [valueName]: item[String(valueName)],
+          [displayName]: item[String(displayName)] || item.locale.en.name,
+        }))
       )
+    }
+  }, [data, displayName, valueName])
 
-      if (index > -1) {
-        props.onChange(options[index]?.value)
+  useEffect(() => {
+    if (props.value && options.length) {
+      const value = options.find((option) => option[valueName] === props.value)
+      if (value && lastValueOnChange !== JSON.stringify(value[valueName])) {
+        setValue(value[valueName])
       }
     }
-  }, [value])
+  }, [options, props.value, lastValueOnChange])
 
-  useEffect(() => {
-    setValue(props.value || '')
-  }, [props.value])
-
-  useEffect(() => {
-    setOptions(props.options || [])
-  }, [props.options])
+  useEffectAfterFirstUpdate(() => {
+    if (
+      value &&
+      value[valueName] &&
+      typeof props.onChange === 'function' &&
+      lastValueOnChange !== JSON.stringify(value)
+    ) {
+      setLastValueOnChange(JSON.stringify(value[valueName]))
+      props.onChange(value[valueName])
+    }
+  }, [value, props.onChange, valueName, lastValueOnChange])
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -69,49 +90,43 @@ export function Combobox(props: ComboboxPrps) {
             )}
           >
             <span>
-              {value &&
-              options.find(
-                (language) =>
-                  language.value.toLocaleLowerCase() ===
-                  value.toLocaleLowerCase()
-              )?.label
-                ? options.find(
-                    (language) =>
-                      language.value.toLocaleLowerCase() ===
-                      value.toLocaleLowerCase()
-                  )?.label
-                : t('selectTimezone')}
+              {value && (
+                <Fragment>
+                  {value[displayName] ||
+                    (options.find((opt) => opt.id == value) || {}).name}
+                </Fragment>
+              )}
             </span>
+
             <ChevronsUpDown className='ml-2 h-3 w-3 shrink-0 opacity-50' />
           </Button>
         </FormControl>
       </PopoverTrigger>
-      <PopoverContent className='w-[200px] p-0'>
+      <PopoverContent className='w-[200px] p-0' style={{ zIndex: 100 }}>
         <Command>
-          <CommandInput placeholder='Search framework...' />
-          <CommandList>
-            <CommandEmpty>No framework found.</CommandEmpty>
-            <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.value}
-                  onSelect={(currentValue) => {
-                    setValue(currentValue === value ? '' : currentValue)
-                    setOpen(false)
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      'mr-2 h-4 w-4',
-                      option.value === value ? 'opacity-100' : 'opacity-0'
-                    )}
-                  />
-                  {option.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
+          <CommandInput placeholder='Search...' />
+          <CommandEmpty>No framework found.</CommandEmpty>
+          <CommandGroup>
+            {options.map((option) => (
+              <CommandItem
+                key={option[valueName]}
+                onSelect={() => {
+                  setValue(option)
+                  setOpen(false)
+                }}
+              >
+                <Check
+                  className={cn(
+                    'mr-2 h-4 w-4',
+                    option[valueName] === value[valueName]
+                      ? 'opacity-100'
+                      : 'opacity-0'
+                  )}
+                />
+                {option[displayName]}
+              </CommandItem>
+            ))}
+          </CommandGroup>
         </Command>
       </PopoverContent>
     </Popover>

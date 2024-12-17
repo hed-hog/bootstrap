@@ -1,7 +1,13 @@
+import { useQuery } from '@tanstack/react-query'
+import { Textarea } from '../ui/textarea'
+import { Combobox } from '@/components/custom/combo-box'
+import { PasswordInput } from '@/components/fields/password-input-field'
 import { RichTextField } from '@/components/fields/rich-text-field'
 import { ColorPickerField } from '@/components/pickers/color-picker-field'
 import { DatePickerField } from '@/components/pickers/date-picker-field'
+import { SheetPickerField } from '@/components/pickers/sheet-picker-field'
 import { Checkbox } from '@/components/ui/checkbox'
+import { FormControl } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MultiSelectField } from '@/components/ui/multi-select-field'
@@ -15,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
 import { EnumFieldType } from '@/enums/EnumFieldType'
 import { FieldProps as FieldPropsForm } from '@/types/form-panel'
 import { CheckedState } from '@radix-ui/react-checkbox'
@@ -25,11 +32,8 @@ import {
   useEffect,
   useState,
 } from 'react'
-import { SheetPickerField } from '@/components/pickers/sheet-picker-field'
-import { FormControl } from '@/components/ui/form'
-import { Switch } from '@/components/ui/switch'
-import { Combobox } from '@/components/custom/combo-box'
-import { PasswordInput } from '@/components/fields/password-input-field'
+import FileUploader from './upload-field'
+import { useApp } from '@/hooks/use-app'
 
 export type FieldProps = (
   | {
@@ -38,11 +42,18 @@ export type FieldProps = (
         | EnumFieldType.COLOR
         | EnumFieldType.SELECT
         | EnumFieldType.COMBOBOX
+        | EnumFieldType.TEXTAREA
       value: string
       onChange: (value: string) => void
     }
   | {
-      type: EnumFieldType.TEXT | EnumFieldType.FILE | EnumFieldType.PASSWORD
+      type: EnumFieldType.FILE
+      name: string
+      value: number
+      onChange: (value: number) => void
+    }
+  | {
+      type: EnumFieldType.TEXT | EnumFieldType.PASSWORD
       name: string
       value: string
       onChange: ChangeEventHandler<HTMLInputElement>
@@ -75,6 +86,7 @@ export type FieldProps = (
   FieldPropsForm
 
 const Field = forwardRef<HTMLDivElement, FieldProps>((props, _ref) => {
+  const { request } = useApp()
   const [value, setValue] = useState<string | string[]>(props.value)
   const [options, setOptions] = useState(props.options)
 
@@ -82,8 +94,31 @@ const Field = forwardRef<HTMLDivElement, FieldProps>((props, _ref) => {
     setValue(props.value)
   }, [props.value])
 
+  if (!props.options?.length && typeof props.url === 'string') {
+    const { data, isLoading, error } = useQuery({
+      queryKey: [`options-${props.url}`],
+      queryFn: () =>
+        request({
+          url: props.url as string,
+        }),
+    })
+
+    useEffect(() => {
+      if (data && !isLoading && !error) {
+        const options = (data.data as any).data.map((item: any) => ({
+          label: item.name,
+          value: item.slug,
+        }))
+
+        setOptions(options)
+      }
+    }, [data, isLoading, error])
+  }
+
   useEffect(() => {
-    setOptions(props.options)
+    if (props.options?.length) {
+      setOptions(props.options)
+    }
   }, [props.options])
 
   switch (props.type) {
@@ -92,7 +127,7 @@ const Field = forwardRef<HTMLDivElement, FieldProps>((props, _ref) => {
         <Combobox
           value={String(value)}
           onChange={props.onChange}
-          options={options || []}
+          url={String(props.url)}
         />
       )
 
@@ -108,8 +143,21 @@ const Field = forwardRef<HTMLDivElement, FieldProps>((props, _ref) => {
         />
       )
 
+    case EnumFieldType.TEXTAREA:
+      return (
+        <FormControl>
+          <Textarea
+            value={value as string}
+            onChange={(event) => {
+              const newValue = event.target.value
+              setValue(newValue)
+              props.onChange(newValue)
+            }}
+            required={props.required}
+          />
+        </FormControl>
+      )
     case EnumFieldType.TEXT:
-    case EnumFieldType.FILE:
       return (
         <FormControl>
           <Input
@@ -117,9 +165,22 @@ const Field = forwardRef<HTMLDivElement, FieldProps>((props, _ref) => {
             required={props.required}
             type={props.type}
             value={value || ''}
-            onChange={(event) => props.onChange(event.target.value)}
+            onChange={(event) => {
+              const newValue = event.target.value
+              setValue(newValue)
+              props.onChange(newValue)
+            }}
           />
         </FormControl>
+      )
+
+    case EnumFieldType.FILE:
+      return (
+        <FileUploader
+          name={props.name}
+          value={props.value}
+          onChange={props.onChange}
+        />
       )
 
     case EnumFieldType.PASSWORD:
@@ -128,7 +189,11 @@ const Field = forwardRef<HTMLDivElement, FieldProps>((props, _ref) => {
           name={props.name}
           required={props.required}
           value={value || ''}
-          onChange={props.onChange}
+          onChange={(event) => {
+            const newValue = event.target.value
+            setValue(newValue)
+            props.onChange(newValue)
+          }}
         />
       )
 
@@ -176,8 +241,10 @@ const Field = forwardRef<HTMLDivElement, FieldProps>((props, _ref) => {
         <div>
           <FormControl>
             <Switch
-              value={value as unknown as string}
-              onCheckedChange={(value) => props.onChange(value)}
+              value={(value || '0') as unknown as string}
+              onCheckedChange={(value) => {
+                props.onChange(value)
+              }}
             />
           </FormControl>
         </div>

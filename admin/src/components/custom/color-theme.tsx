@@ -1,6 +1,5 @@
 import { useTheme } from '@/components/app/theme-provider'
-import { Slider } from '@/components/ui/slider'
-import { adjustHSL, hexToHSL } from '@/lib/colors'
+import { hexToHSL } from '@/lib/colors'
 import { useEffect, useState } from 'react'
 import { HexColorInput, HexColorPicker } from 'react-colorful'
 import CalendarDemo from '@/components/examples/calendar'
@@ -8,76 +7,58 @@ import { CardsChat } from '@/components/examples/chat'
 import Stats from '@/components/examples/stats'
 
 interface IProps {
+  defaultValues: any[] | undefined
   onChange?: (values: any) => void
   onSubmit?: (values: any) => void
 }
 
-export default function ColorTheme({ onChange }: IProps) {
+export default function ColorTheme({ defaultValues, onChange }: IProps) {
   const { theme } = useTheme()
-  const [color, setColor] = useState('#bfaa40')
-  const [saturation, setSaturation] = useState(50)
-  const [lightness, setLightness] = useState(50)
-  const [hue, setHue] = useState(50)
-  const hsl = hexToHSL(color)
+  const [defaultPrimary, setDefaultPrimary] = useState('')
+  const [defaultSecondary, setDefaultSecondary] = useState('')
+  const [defaultMuted, setDefaultMuted] = useState('')
+  const [defaultAccent, setDefaultAccent] = useState('')
+  const [defaultMenuWidth, setDefaultMenuWidth] = useState('')
 
   useEffect(() => {
-    setHue(hsl.h)
-    setSaturation(hsl.s)
-    setLightness(hsl.l)
-  }, [color])
-
-  useEffect(() => {
-    const backgroundHSL = adjustHSL(hsl, 0, 15, -30)
-    const secondaryHSL = adjustHSL(hsl, -20, -10, 10)
-    const accentHSL = adjustHSL(hsl, 0, -10, 20)
-    const mutedHSL = {
-      h: hue,
-      s: saturation,
-      l: lightness,
+    if (defaultValues) {
+      setDefaultPrimary(
+        defaultValues.find((v) => v.slug.includes('theme-primary'))?.value
+      )
+      setDefaultSecondary(
+        defaultValues.find((v) => v.slug.includes('theme-secondary'))?.value
+      )
+      setDefaultMuted(
+        defaultValues.find((v) => v.slug.includes('theme-muted'))?.value
+      )
+      setDefaultAccent(
+        defaultValues.find((v) => v.slug.includes('theme-accent'))?.value
+      )
+      setDefaultMenuWidth(
+        defaultValues.find((v) => v.slug.includes('menu-width'))?.value
+      )
     }
+  }, [defaultValues])
+
+  useEffect(() => {
+    const primaryHSL = hexToHSL(defaultPrimary)
+    const secondaryHSL = hexToHSL(defaultSecondary)
+    const accentHSL = hexToHSL(defaultAccent)
+    const mutedHSL = hexToHSL(defaultMuted)
 
     document.documentElement.style.setProperty(
       '--primary',
-      `${hue} ${saturation}% ${lightness}%`
+      `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`
     )
 
     document.documentElement.style.setProperty(
-      '--primary-foreground',
-      `${hue} ${saturation}% ${lightness > 50 ? 20 : 80}%`
+      '--secondary',
+      `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`
     )
-
-    theme === 'dark' &&
-      document.documentElement.style.setProperty(
-        '--background',
-        `${backgroundHSL.h} ${saturation}% ${lightness / 10}%`
-      )
-
-    theme === 'dark' &&
-      document.documentElement.style.setProperty(
-        '--background-foreground',
-        `${backgroundHSL.h} ${saturation}% ${lightness > 50 ? 20 : 80}%`
-      )
-
-    theme === 'dark' &&
-      document.documentElement.style.setProperty(
-        '--secondary',
-        `${secondaryHSL.h} ${saturation}% ${lightness / 10}%`
-      )
-
-    theme === 'dark' &&
-      document.documentElement.style.setProperty(
-        '--secondary-foreground',
-        `${secondaryHSL.h} ${saturation}% ${lightness > 50 ? 20 : 80}%`
-      )
 
     document.documentElement.style.setProperty(
       '--accent',
-      `${accentHSL.h} ${saturation}% ${lightness / 10}%`
-    )
-
-    document.documentElement.style.setProperty(
-      '--accent-foreground',
-      `${accentHSL.h} ${saturation}% ${lightness > 50 ? 20 : 80}%`
+      `${accentHSL.h} ${accentHSL.s}% ${accentHSL.l}%`
     )
 
     document.documentElement.style.setProperty(
@@ -86,14 +67,13 @@ export default function ColorTheme({ onChange }: IProps) {
     )
 
     document.documentElement.style.setProperty(
-      '--muted-foreground',
-      `${mutedHSL.h} ${mutedHSL.s}% ${mutedHSL.l > 50 ? 20 : 80}%`
+      '--menu-width',
+      `${defaultMenuWidth}rem`
     )
 
     const computedStyles = getComputedStyle(document.documentElement)
     const savedValues = {
       primary: computedStyles.getPropertyValue('--primary').trim(),
-      background: `${backgroundHSL.h} ${backgroundHSL.s}% ${backgroundHSL.l}%`,
       secondary: `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`,
       accent: `${accentHSL.h} ${accentHSL.s}% ${accentHSL.l}%`,
       muted: computedStyles.getPropertyValue('--muted').trim(),
@@ -109,25 +89,17 @@ export default function ColorTheme({ onChange }: IProps) {
       fontFamily: computedStyles.getPropertyValue('--font-family').trim(),
     }
 
-    onChange && onChange(savedValues)
-  }, [color, saturation, lightness, theme])
-
-  useEffect(() => {
-    document.documentElement.style.setProperty(
-      '--background',
-      `50 50% ${theme === 'dark' ? '5' : '100'}%`
-    )
-
-    document.documentElement.style.setProperty(
-      '--secondary',
-      `210 40% ${theme === 'dark' ? '0' : '100'}%`
-    )
-
-    document.documentElement.style.setProperty(
-      '--accent',
-      `210 40% ${theme === 'dark' ? '0' : '100'}%`
-    )
-  }, [theme])
+    if (typeof onChange === 'function') {
+      onChange(savedValues)
+    }
+  }, [
+    defaultPrimary,
+    defaultSecondary,
+    defaultMuted,
+    defaultAccent,
+    defaultMenuWidth,
+    theme,
+  ])
 
   return (
     <div className='flex w-full flex-row justify-between'>
@@ -135,8 +107,12 @@ export default function ColorTheme({ onChange }: IProps) {
         <div className='flex flex-row items-start justify-center gap-8 rounded-lg shadow-md'>
           <div className='mx-12 flex flex-col items-center space-y-4'>
             <HexColorPicker
-              color={color}
-              onChange={setColor}
+              color={defaultPrimary}
+              onChange={(newColor) => {
+                if (/^#([0-9A-F]{3}){1,2}$/i.test(newColor)) {
+                  setDefaultPrimary(newColor)
+                }
+              }}
               className='h-64 w-64'
             />
             <div className='flex flex-col items-center space-x-2 pb-12'>
@@ -144,49 +120,22 @@ export default function ColorTheme({ onChange }: IProps) {
                 <span>Selected Color:</span>
                 <div
                   className='h-8 w-8 border-2 border-gray-300'
-                  style={{ backgroundColor: color, borderRadius: '8px' }}
+                  style={{
+                    backgroundColor: defaultPrimary,
+                    borderRadius: '8px',
+                  }}
                 ></div>
               </div>
               <HexColorInput
-                color={color}
-                onChange={setColor}
+                color={defaultPrimary}
+                onChange={(newColor) => {
+                  if (/^#([0-9A-F]{3}){1,2}$/i.test(newColor)) {
+                    setDefaultPrimary(newColor)
+                  }
+                }}
                 className='rounded border border-gray-300 bg-primary px-2 py-1 text-primary-foreground'
                 prefixed
               />
-            </div>
-            <div className='flex w-full max-w-xs flex-col space-y-6'>
-              <div>
-                <label
-                  htmlFor='saturation'
-                  className='block text-sm font-medium'
-                >
-                  Saturation: {saturation}
-                </label>
-                <Slider
-                  value={[saturation]}
-                  onValueChange={(value) => setSaturation(value[0])}
-                  defaultValue={[50]}
-                  min={0}
-                  max={100}
-                  step={1}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor='lightness'
-                  className='block text-sm font-medium'
-                >
-                  Lightness: {lightness}
-                </label>
-                <Slider
-                  value={[lightness]}
-                  onValueChange={(value) => setLightness(value[0])}
-                  defaultValue={[50]}
-                  min={0}
-                  max={100}
-                  step={1}
-                />
-              </div>
             </div>
           </div>
           <CardsChat />

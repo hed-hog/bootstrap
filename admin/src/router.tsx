@@ -46,6 +46,74 @@ const routes = [
         }),
       },
       {
+        path: "cbc",
+        children: [
+          {
+            path: "banking",
+            lazy: async () => ({
+              Component: (await import("./pages/cbc/banking/index.tsx"))
+                .default,
+            }),
+          },
+          {
+            path: "coin",
+            lazy: async () => ({
+              Component: (await import("./pages/cbc/coin/index.tsx")).default,
+            }),
+          },
+          {
+            path: "operation",
+            lazy: async () => ({
+              Component: (await import("./pages/cbc/operation/index.tsx"))
+                .default,
+            }),
+          },
+          {
+            path: "quotation",
+            lazy: async () => ({
+              Component: (await import("./pages/cbc/quotation/index.tsx"))
+                .default,
+            }),
+          },
+          {
+            path: "quotation-type",
+            lazy: async () => ({
+              Component: (await import("./pages/cbc/quotation-type/index.tsx"))
+                .default,
+            }),
+          },
+          {
+            path: "stock-exchange",
+            lazy: async () => ({
+              Component: (await import("./pages/cbc/stock-exchange/index.tsx"))
+                .default,
+            }),
+          },
+          {
+            path: "strategy",
+            lazy: async () => ({
+              Component: (await import("./pages/cbc/strategy/index.tsx"))
+                .default,
+            }),
+          },
+          {
+            path: "trade-signal-type",
+            lazy: async () => ({
+              Component: (
+                await import("./pages/cbc/trade-signal-type/index.tsx")
+              ).default,
+            }),
+          },
+          {
+            path: "trend-type",
+            lazy: async () => ({
+              Component: (await import("./pages/cbc/trend-type/index.tsx"))
+                .default,
+            }),
+          },
+        ],
+      },
+      {
         path: "contact",
         children: [
           {
@@ -77,7 +145,7 @@ const routes = [
             path: "person",
             children: [
               {
-                path: "address-type",
+                path: "person-address-type",
                 lazy: async () => ({
                   Component: (
                     await import(
@@ -87,7 +155,7 @@ const routes = [
                 }),
               },
               {
-                path: "contact-type",
+                path: "person-contact-type",
                 lazy: async () => ({
                   Component: (
                     await import(
@@ -97,7 +165,7 @@ const routes = [
                 }),
               },
               {
-                path: "custom-type",
+                path: "person-custom-type",
                 lazy: async () => ({
                   Component: (
                     await import("./pages/contact/person-custom-type/index.tsx")
@@ -105,7 +173,7 @@ const routes = [
                 }),
               },
               {
-                path: "document-type",
+                path: "person-document-type",
                 lazy: async () => ({
                   Component: (
                     await import(

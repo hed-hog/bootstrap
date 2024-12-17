@@ -4,15 +4,16 @@ import FormPanel, {
 } from "@/components/panels/form-panel";
 import { Overlay } from "@/components/custom/overlay";
 import { TabPanel } from "@/components/panels/tab-panel";
-import { EnumFieldType } from "@/enums/EnumFieldType";
 import {
   usePersonDocumentTypeGet,
   usePersonDocumentTypeUpdate,
 } from "@/features/contact/person-document-type";
 import useEffectAfterFirstUpdate from "@/hooks/use-effect-after-first-update";
 import { PersonDocumentType } from "@/types/models";
-import { forwardRef, useImperativeHandle, useRef } from "react";
+import { useState, forwardRef, useImperativeHandle, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { IconEdit, IconPlus, IconTrash } from "@tabler/icons-react";
+import { EnumFieldType } from "@/enums/EnumFieldType";
 
 export type PersonDocumentTypeUpdatePanelProps = {
   data: PersonDocumentType;
@@ -21,7 +22,7 @@ export type PersonDocumentTypeUpdatePanelProps = {
 
 const PersonDocumentTypeUpdatePanel = forwardRef(
   ({ data, onUpdated }: PersonDocumentTypeUpdatePanelProps, ref) => {
-    const { t } = useTranslation(["actions"]);
+    const { t } = useTranslation(["actions", "fields", "translations"]);
     const { data: item, isLoading } = usePersonDocumentTypeGet(
       data.id as number,
     );
@@ -49,14 +50,23 @@ const PersonDocumentTypeUpdatePanel = forwardRef(
                   fields={[
                     {
                       name: "country_id",
-                      label: { text: t("country_id", { ns: "translation" }) },
-                      type: EnumFieldType.TEXT,
+                      label: {
+                        text: t("person_document_type.country_id", {
+                          ns: "fields",
+                        }),
+                      },
+                      type: EnumFieldType.COMBOBOX,
                       required: true,
+                      url: "/country",
+                      displayName: "country",
+                      valueName: "id",
                     },
 
                     {
                       name: "slug",
-                      label: { text: t("slug", { ns: "translation" }) },
+                      label: {
+                        text: t("person_document_type.slug", { ns: "fields" }),
+                      },
                       type: EnumFieldType.TEXT,
                       required: true,
                     },
@@ -65,7 +75,10 @@ const PersonDocumentTypeUpdatePanel = forwardRef(
                   ]}
                   button={{ text: t("save", { ns: "actions" }) }}
                   onSubmit={(data) => {
-                    personDocumentTypeUpdate({ id: data.id, data });
+                    personDocumentTypeUpdate({
+                      id: data.id,
+                      data,
+                    });
                     if (typeof onUpdated === "function") {
                       onUpdated(data);
                     }

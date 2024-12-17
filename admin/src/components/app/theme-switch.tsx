@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button'
 export default function ThemeSwitch() {
   const { theme, setTheme } = useTheme()
 
-  /* Update theme-color meta tag
-   * when theme is updated */
   useEffect(() => {
     const themeColor = theme === 'dark' ? '#000' : '#fff'
     const metaThemeColor = document.querySelector("meta[name='theme-color']")

@@ -16,7 +16,7 @@ export type PersonCreatePanelProps = {
 const PersonCreatePanel = forwardRef(
   ({ onCreated }: PersonCreatePanelProps, ref) => {
     const formRef = useRef<FormPanelRef>(null);
-    const { t } = useTranslation(["actions"]);
+    const { t } = useTranslation(["actions", "fields", "translations"]);
     const { mutateAsync: createPerson } = usePersonCreate();
 
     useImperativeHandle(
@@ -35,37 +35,45 @@ const PersonCreatePanel = forwardRef(
         fields={[
           {
             name: "name",
-            label: { text: t("name", { ns: "translation" }) },
+            label: { text: t("person.name", { ns: "fields" }) },
             type: EnumFieldType.TEXT,
             required: true,
           },
 
           {
             name: "photo_id",
-            label: { text: t("photo_id", { ns: "translation" }) },
-            type: EnumFieldType.TEXT,
+            label: { text: t("person.photo_id", { ns: "fields" }) },
+            type: EnumFieldType.FILE,
             required: true,
+            url: "/file",
+            displayName: "photo",
+            valueName: "id",
           },
 
           {
             name: "type_id",
-            label: { text: t("type_id", { ns: "translation" }) },
-            type: EnumFieldType.TEXT,
+            label: { text: t("person.type_id", { ns: "fields" }) },
+            type: EnumFieldType.COMBOBOX,
             required: true,
+            url: "/person-type",
+            displayName: "type",
+            valueName: "id",
           },
 
           {
             name: "birth_at",
-            label: { text: t("birth_at", { ns: "translation" }) },
-            type: EnumFieldType.TEXT,
+            label: { text: t("person.birth_at", { ns: "fields" }) },
+            type: EnumFieldType.DATEPICKER,
             required: true,
           },
         ]}
         button={{ text: t("create", { ns: "actions" }) }}
         onSubmit={async (data) => {
-          const createdData = await createPerson(data);
+          const createdData = await createPerson({
+            data,
+          });
           if (typeof onCreated === "function") {
-            onCreated(createdData);
+            onCreated(createdData as any);
           }
         }}
       />

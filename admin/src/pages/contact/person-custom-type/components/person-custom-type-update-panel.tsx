@@ -4,15 +4,16 @@ import FormPanel, {
 } from "@/components/panels/form-panel";
 import { Overlay } from "@/components/custom/overlay";
 import { TabPanel } from "@/components/panels/tab-panel";
-import { EnumFieldType } from "@/enums/EnumFieldType";
 import {
   usePersonCustomTypeGet,
   usePersonCustomTypeUpdate,
 } from "@/features/contact/person-custom-type";
 import useEffectAfterFirstUpdate from "@/hooks/use-effect-after-first-update";
 import { PersonCustomType } from "@/types/models";
-import { forwardRef, useImperativeHandle, useRef } from "react";
+import { useState, forwardRef, useImperativeHandle, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { IconEdit, IconPlus, IconTrash } from "@tabler/icons-react";
+import { EnumFieldType } from "@/enums/EnumFieldType";
 
 export type PersonCustomTypeUpdatePanelProps = {
   data: PersonCustomType;
@@ -21,7 +22,7 @@ export type PersonCustomTypeUpdatePanelProps = {
 
 const PersonCustomTypeUpdatePanel = forwardRef(
   ({ data, onUpdated }: PersonCustomTypeUpdatePanelProps, ref) => {
-    const { t } = useTranslation(["actions"]);
+    const { t } = useTranslation(["actions", "fields", "translations"]);
     const { data: item, isLoading } = usePersonCustomTypeGet(data.id as number);
     const { mutate: personCustomTypeUpdate } = usePersonCustomTypeUpdate();
     const formRef = useRef<FormPanelRef>(null);
@@ -47,7 +48,9 @@ const PersonCustomTypeUpdatePanel = forwardRef(
                   fields={[
                     {
                       name: "slug",
-                      label: { text: t("slug", { ns: "translation" }) },
+                      label: {
+                        text: t("person_custom_type.slug", { ns: "fields" }),
+                      },
                       type: EnumFieldType.TEXT,
                       required: true,
                     },
@@ -56,7 +59,10 @@ const PersonCustomTypeUpdatePanel = forwardRef(
                   ]}
                   button={{ text: t("save", { ns: "actions" }) }}
                   onSubmit={(data) => {
-                    personCustomTypeUpdate({ id: data.id, data });
+                    personCustomTypeUpdate({
+                      id: data.id,
+                      data,
+                    });
                     if (typeof onUpdated === "function") {
                       onUpdated(data);
                     }

@@ -19,7 +19,7 @@ export type PersonTypeCreatePanelProps = {
 const PersonTypeCreatePanel = forwardRef(
   ({ onCreated }: PersonTypeCreatePanelProps, ref) => {
     const formRef = useRef<FormPanelRef>(null);
-    const { t } = useTranslation(["actions"]);
+    const { t } = useTranslation(["actions", "fields", "translations"]);
     const { mutateAsync: createPersonType } = usePersonTypeCreate();
 
     useImperativeHandle(
@@ -38,7 +38,7 @@ const PersonTypeCreatePanel = forwardRef(
         fields={[
           {
             name: "slug",
-            label: { text: t("slug", { ns: "translation" }) },
+            label: { text: t("person_type.slug", { ns: "fields" }) },
             type: EnumFieldType.TEXT,
             required: true,
           },
@@ -47,9 +47,11 @@ const PersonTypeCreatePanel = forwardRef(
         ]}
         button={{ text: t("create", { ns: "actions" }) }}
         onSubmit={async (data) => {
-          const createdData = await createPersonType(data);
+          const createdData = await createPersonType({
+            data,
+          });
           if (typeof onCreated === "function") {
-            onCreated(createdData);
+            onCreated(createdData as any);
           }
         }}
       />
