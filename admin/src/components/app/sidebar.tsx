@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Nav from '../navs/nav'
+import { getValue } from '@/lib/get-property-value'
 
 interface SidebarProps extends React.HTMLAttributes<HTMLElement> {
   isCollapsed: boolean
@@ -20,11 +21,13 @@ export default function Sidebar({
   setIsCollapsed,
 }: SidebarProps) {
   const {
-    t,
     i18n: { language },
   } = useTranslation()
   const { request } = useApp()
   const [navOpened, setNavOpened] = useState(false)
+  const [systemName, setSystemName] = useState<string>('')
+  const [systemSlogan, setSystemSlogan] = useState<string>('')
+  const [imageUrl, setImageUrl] = useState<string>('')
   const { data } = useQuery({
     queryKey: ['menu-system', language],
     queryFn: () =>
@@ -32,6 +35,31 @@ export default function Sidebar({
         url: `/menu/system`,
       }),
   })
+
+  const refreshValues = () => {
+    setImageUrl(getValue('--image-url'))
+    setSystemName(getValue('--system-name'))
+    setSystemSlogan(getValue('--system-slogan'))
+  }
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'style') {
+        refreshValues()
+      }
+    })
+  })
+
+  useEffect(() => {
+    refreshValues()
+    observer.observe(document.documentElement, {
+      attributes: true,
+    })
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
 
   let sideLinks = getSideLinks((data?.data as any[]) || [])
 
@@ -68,28 +96,16 @@ export default function Sidebar({
           className='flex justify-between px-4 py-3 shadow-sm md:px-4'
         >
           <div className={`flex items-center ${!isCollapsed ? 'gap-2' : ''}`}>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              width='24'
-              height='24'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
+            <img
+              src={imageUrl}
+              alt='Logo'
               className={`transition-all ${isCollapsed ? 'h-6 w-6' : 'h-8 w-8'}`}
-            >
-              <path stroke='none' d='M0 0h24v24H0z' fill='none' />
-              <path d='M3 3m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z' />
-              <circle cx='9.5' cy='9.5' r='.5' fill='currentColor' />
-              <circle cx='14.5' cy='14.5' r='.5' fill='currentColor' />
-            </svg>
+            />
             <div
               className={`flex flex-col justify-end truncate ${isCollapsed ? 'invisible w-0' : 'visible w-auto'}`}
             >
-              <span className='font-medium'>HedHog</span>
-              <span className='text-xs'>{t('slogan')}</span>
+              <span className='font-medium'>{systemName}</span>
+              <span className='text-xs'>{systemSlogan}</span>
             </div>
           </div>
 
