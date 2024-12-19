@@ -24,7 +24,7 @@ const routes = [
     }),
   },
   {
-    path: '/password-recovery',
+    path: '/password-recovery/:code',
     lazy: async () => ({
       Component: (await import('./pages/auth/password-recovery.tsx')).default,
     }),
@@ -56,6 +56,74 @@ const routes = [
         lazy: async () => ({
           Component: (await import('./pages/dashboard/index.tsx')).default,
         }),
+      },
+      {
+        path: 'cbc',
+        children: [
+          {
+            path: 'banking',
+            lazy: async () => ({
+              Component: (await import('./pages/cbc/banking/index.tsx'))
+                .default,
+            }),
+          },
+          {
+            path: 'coin',
+            lazy: async () => ({
+              Component: (await import('./pages/cbc/coin/index.tsx')).default,
+            }),
+          },
+          {
+            path: 'operation',
+            lazy: async () => ({
+              Component: (await import('./pages/cbc/operation/index.tsx'))
+                .default,
+            }),
+          },
+          {
+            path: 'quotation',
+            lazy: async () => ({
+              Component: (await import('./pages/cbc/quotation/index.tsx'))
+                .default,
+            }),
+          },
+          {
+            path: 'quotation-type',
+            lazy: async () => ({
+              Component: (await import('./pages/cbc/quotation-type/index.tsx'))
+                .default,
+            }),
+          },
+          {
+            path: 'stock-exchange',
+            lazy: async () => ({
+              Component: (await import('./pages/cbc/stock-exchange/index.tsx'))
+                .default,
+            }),
+          },
+          {
+            path: 'strategy',
+            lazy: async () => ({
+              Component: (await import('./pages/cbc/strategy/index.tsx'))
+                .default,
+            }),
+          },
+          {
+            path: 'trade-signal-type',
+            lazy: async () => ({
+              Component: (
+                await import('./pages/cbc/trade-signal-type/index.tsx')
+              ).default,
+            }),
+          },
+          {
+            path: 'trend-type',
+            lazy: async () => ({
+              Component: (await import('./pages/cbc/trend-type/index.tsx'))
+                .default,
+            }),
+          },
+        ],
       },
       {
         path: 'contact',
