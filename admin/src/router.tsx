@@ -57,73 +57,7 @@ const routes = [
           Component: (await import('./pages/dashboard/index.tsx')).default,
         }),
       },
-      {
-        path: 'management',
-        children: [
-          {
-            path: '',
-            lazy: async () => ({
-              Component: (await import('./pages/management/index.tsx')).default,
-            }),
-          },
-          {
-            path: 'menu',
-            lazy: async () => ({
-              Component: (await import('./pages/management/menu/index.tsx'))
-                .default,
-            }),
-          },
-          {
-            path: 'role',
-            lazy: async () => ({
-              Component: (await import('./pages/management/role/index.tsx'))
-                .default,
-            }),
-          },
-          {
-            path: 'route',
-            lazy: async () => ({
-              Component: (await import('./pages/management/route/index.tsx'))
-                .default,
-            }),
-          },
-          {
-            path: 'screen',
-            lazy: async () => ({
-              Component: (await import('./pages/management/screen/index.tsx'))
-                .default,
-            }),
-          },
-          {
-            path: 'setting',
-            children: [
-              {
-                path: '',
-                lazy: async () => ({
-                  Component: (
-                    await import('./pages/management/setting/index.tsx')
-                  ).default,
-                }),
-              },
-              {
-                path: ':slug',
-                lazy: async () => ({
-                  Component: (
-                    await import('./pages/management/setting/forms.tsx')
-                  ).default,
-                }),
-              },
-            ],
-          },
-          {
-            path: 'user',
-            lazy: async () => ({
-              Component: (await import('./pages/management/user/index.tsx'))
-                .default,
-            }),
-          },
-        ],
-      },
+      
     ],
   },
 
