@@ -6,11 +6,13 @@ import { AppProvider } from '@/lib/app-provider'
 import router from '@/router'
 import i18n from 'i18next'
 import resourcesToBackend from 'i18next-resources-to-backend'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import { initReactI18next } from 'react-i18next'
 import { RouterProvider } from 'react-router-dom'
 import { SidebarProvider } from './context/sidebar-context'
+import { useApp } from './hooks/use-app'
+import { PageTitle } from './components/custom/page-title'
 
 i18n.on('languageChanged', (lng) => {
   localStorage.setItem('i18nextLng', lng)
@@ -32,15 +34,20 @@ i18n
     },
   })
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <AppProvider>
-      <SidebarProvider>
-        <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
-          <RouterProvider router={router} />
-          <Toaster />
-        </ThemeProvider>
-      </SidebarProvider>
-    </AppProvider>
-  </React.StrictMode>
-)
+const App = () => {
+  return (
+    <React.StrictMode>
+      <AppProvider>
+        <SidebarProvider>
+          <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
+            <PageTitle />
+            <RouterProvider router={router} />
+            <Toaster />
+          </ThemeProvider>
+        </SidebarProvider>
+      </AppProvider>
+    </React.StrictMode>
+  )
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(<App />)
