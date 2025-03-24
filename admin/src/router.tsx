@@ -52,12 +52,6 @@ const routes = [
     errorElement: <GeneralError />,
     children: [
       {
-        index: true,
-        lazy: async () => ({
-          Component: (await import('./pages/dashboard/index.tsx')).default,
-        }),
-      },
-      {
         path: 'faq',
         lazy: async () => ({
           Component: (await import('./pages/faq/index.tsx')).default,
