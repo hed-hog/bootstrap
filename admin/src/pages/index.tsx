@@ -294,7 +294,7 @@ export default function Page() {
                 variant='outline'
                 size='sm'
                 className='w-full'
-                onClick={() => navigate('/users')}
+                onClick={() => navigate('/management/user')}
               >
                 <User className='mr-2 h-4 w-4' />
                 Ver Todos Usuários
